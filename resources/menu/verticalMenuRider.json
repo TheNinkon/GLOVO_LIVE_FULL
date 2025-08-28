@@ -1,0 +1,16 @@
+{
+  "menu": [
+    {
+      "url": "rider/dashboard",
+      "name": "Dashboard",
+      "icon": "menu-icon ti tabler-smart-home",
+      "slug": "rider.dashboard"
+    },
+    {
+      "url": "rider/metrics",
+      "name": "Mis Métricas",
+      "icon": "menu-icon ti tabler-report-analytics",
+      "slug": "rider.metrics.index"
+    }
+  ]
+}

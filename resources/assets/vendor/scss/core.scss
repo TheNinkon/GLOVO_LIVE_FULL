@@ -1,0 +1,6 @@
+@import "bootstrap";
+@import "colors";
+@import "bootstrap-extended";
+@import "components";
+@import "../libs/_tabler/_tabler.scss"; // <-- Esta línea es la que necesitas añadir
+@import "custom-styles";

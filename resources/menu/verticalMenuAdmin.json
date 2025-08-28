@@ -1,0 +1,58 @@
+{
+  "menu": [
+    {
+      "url": "admin/dashboard",
+      "name": "Dashboard",
+      "icon": "menu-icon ti tabler-smart-home",
+      "slug": "admin.dashboard"
+    },
+    {
+      "url": "admin/riders",
+      "name": "Gestionar Riders",
+      "icon": "menu-icon ti tabler-users",
+      "slug": "admin.riders.index"
+    },
+    {
+      "url": "admin/forecasts",
+      "name": "Gestionar Forecasts",
+      "icon": "menu-icon ti tabler-file-analytics",
+      "slug": "admin.forecasts.index"
+    },
+    {
+      "url": "admin/accounts",
+      "name": "Gestionar Cuentas",
+      "icon": "menu-icon ti tabler-id",
+      "slug": "admin.accounts.index"
+    },
+    {
+      "url": "admin/coverage",
+      "name": "Dashboard Cobertura",
+      "icon": "menu-icon ti tabler-chart-pie-2",
+      "slug": "admin.coverage.index"
+    },
+    {
+      "url": "admin/rider-status",
+      "name": "Estado de Riders",
+      "icon": "menu-icon ti tabler-user-check",
+      "slug": "admin.rider-status.index"
+    },
+    {
+      "menuHeader": "Análisis"
+    },
+    {
+      "url": "admin/metrics",
+      "name": "Métricas",
+      "icon": "menu-icon ti tabler-report-analytics",
+      "slug": "admin.metrics.index"
+    },
+    {
+      "menuHeader": "Finanzas"
+    },
+    {
+      "url": "admin/prefacturas",
+      "name": "Prefacturación",
+      "icon": "menu-icon ti tabler-file-dollar",
+      "slug": "admin.prefacturas.index"
+    }
+  ]
+}

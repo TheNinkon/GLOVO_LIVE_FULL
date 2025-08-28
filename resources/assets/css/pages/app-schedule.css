@@ -1,0 +1,62 @@
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+}
+
+.slot-item {
+  border: 1px solid #dbdade;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+.slot-time {
+  font-weight: 600;
+}
+
+.slot-icon {
+  display: block;
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+/* Estado: Disponible */
+.slot-item[data-status='available'] {
+  background-color: #fff;
+  color: #5d596c;
+}
+.slot-item[data-status='available']:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Estado: Reservado por el usuario */
+.slot-item[data-status='mine'] {
+  background-color: #28c76f; /* Verde éxito */
+  color: #fff;
+  border-color: #28c76f;
+}
+
+/* Estado: No disponible o lleno */
+.slot-item[data-status='unavailable'] {
+  background-color: #f0f2f8;
+  color: #a1acb8;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Clase para resaltar el bloque completo al pasar el ratón */
+.slot-item.hover-block {
+  background-color: #eef1f8 !important;
+  border-color: #7367f0 !important;
+}
+
+/* Clase para indicar que se está procesando una acción */
+.slot-item.processing {
+  opacity: 0.5;
+  pointer-events: none;
+}

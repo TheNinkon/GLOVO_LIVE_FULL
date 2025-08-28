@@ -1,0 +1,31 @@
+.coverage-table th,
+.coverage-table td {
+  text-align: center;
+  vertical-align: middle;
+  font-weight: 600;
+  padding: 0.5rem;
+}
+
+/* Verde: 100% o más cubierto */
+.coverage-full {
+  background-color: #e8fadf !important;
+  color: #567347;
+}
+
+/* Naranja: 50% o más cubierto */
+.coverage-partial {
+  background-color: #fff2d6 !important;
+  color: #725c1f;
+}
+
+/* Rojo: Menos del 50% cubierto */
+.coverage-low {
+  background-color: #ffeded !important;
+  color: #7a252a;
+}
+
+/* Gris: Sin demanda */
+.coverage-none {
+  background-color: #f0f2f8;
+  color: #a1acb8;
+}
