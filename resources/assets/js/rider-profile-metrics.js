@@ -5,8 +5,9 @@
 'use strict';
 
 $(function () {
-  const assignmentsApiUrl = "{{ route('admin.riders.assignments', $rider->id) }}";
-  const metricsApiUrl = "{{ route('admin.riders.metrics', $rider->id) }}";
+  // Estas variables ahora son globales y están definidas en el Blade
+  // const assignmentsApiUrl = "{{ route('admin.riders.assignments', $rider->id) }}";
+  // const metricsApiUrl = "{{ route('admin.riders.metrics', $rider->id) }}";
 
   const riderAssignmentsTable = $('.datatable-assignments');
   const riderMetricsTable = $('.datatable-metrics');

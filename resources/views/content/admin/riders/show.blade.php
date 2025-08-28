@@ -82,39 +82,17 @@
       <div class="nav-align-top">
         <ul class="nav nav-pills flex-column flex-md-row flex-wrap mb-6 row-gap-2">
           <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#profile-account"><i
-                class="ti ti-user-check icon-sm me-1_5"></i>Cuenta</button>
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#profile-assignments" role="tab"
+              aria-selected="true"><i class="ti tabler-report-money icon-sm me-1_5"></i>Asignaciones</button>
           </li>
           <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#profile-assignments"><i
-                class="ti ti-report-money icon-sm me-1_5"></i>Asignaciones</button>
-          </li>
-          <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#profile-metrics"><i
-                class="ti ti-chart-bar icon-sm me-1_5"></i>Métricas</button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#profile-metrics" role="tab"
+              aria-selected="false"><i class="ti tabler-chart-bar icon-sm me-1_5"></i>Métricas</button>
           </li>
         </ul>
       </div>
       <div class="tab-content pt-4">
-        <div class="tab-pane fade show active" id="profile-account" role="tabpanel">
-          <div class="card mb-6">
-            <h5 class="card-header">Últimas Asignaciones</h5>
-            <div class="card-datatable table-responsive">
-              <table class="table datatable-assignments">
-                <thead class="border-top">
-                  <tr>
-                    <th>ID</th>
-                    <th>Monto</th>
-                    <th>Tipo</th>
-                    <th>Estado</th>
-                    <th>Fecha de Asignación</th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="tab-pane fade" id="profile-assignments" role="tabpanel">
+        <div class="tab-pane fade show active" id="profile-assignments" role="tabpanel">
           <div class="card mb-6">
             <h5 class="card-header d-flex justify-content-between align-items-center">
               Asignaciones de Cash Out y Propinas
@@ -138,7 +116,7 @@
                       <option value="">Todos</option>
                       <option value="pending">Pendiente</option>
                       <option value="paid">Pagado</option>
-                      <option value="deduccion">Deducción</option>
+                      <option value="deducted">Deducido</option>
                     </select>
                   </li>
                 </ul>
