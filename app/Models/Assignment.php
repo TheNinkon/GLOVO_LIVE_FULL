@@ -11,8 +11,8 @@ class Assignment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'account_id',
         'rider_id',
+        'account_id',
         'start_at',
         'end_at',
         'status',
@@ -23,13 +23,13 @@ class Assignment extends Model
         'end_at' => 'datetime',
     ];
 
-    public function account(): BelongsTo
-    {
-        return $this->belongsTo(Account::class);
-    }
-
     public function rider(): BelongsTo
     {
         return $this->belongsTo(Rider::class);
+    }
+
+    public function account(): BelongsTo
+    {
+        return $this->belongsTo(Account::class);
     }
 }

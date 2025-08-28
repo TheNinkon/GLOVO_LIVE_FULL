@@ -47,9 +47,24 @@ class RiderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Rider $rider)
+   public function show(Rider $rider)
     {
-        return view('content.admin.riders.show', compact('rider'));
+        // Precargamos las relaciones para evitar problemas N+1
+        $rider->load(['assignments.account']);
+
+        $transports = Metric::query()
+            ->whereNotNull('transport')
+            ->distinct()
+            ->orderBy('transport')
+            ->pluck('transport');
+
+        $cities = Metric::query()
+            ->whereNotNull('ciudad')
+            ->distinct()
+            ->orderBy('ciudad')
+            ->pluck('ciudad');
+
+        return view('content.admin.riders.show', compact('rider', 'transports', 'cities'));
     }
 
     /**
@@ -74,16 +89,6 @@ class RiderController extends Controller
         $rider->update($request->all());
 
         return redirect()->route('admin.riders.index')->with('success', 'Rider actualizado exitosamente.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Rider $rider)
-    {
-        $rider->delete();
-
-        return redirect()->route('admin.riders.index')->with('success', 'Rider eliminado exitosamente.');
     }
 
     /**
@@ -149,31 +154,53 @@ class RiderController extends Controller
 
     /**
      * Get prefactura assignments for a rider.
+     * Retorna datos paginados en el formato correcto para DataTables.
      */
-    public function getPrefacturaAssignments(Request $request, Rider $rider): JsonResponse
+        public function getPrefacturaAssignments(Request $request, Rider $rider): JsonResponse
     {
-        $query = $rider->prefacturaAssignments();
+        try {
+            $query = $rider->prefacturaAssignments();
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->when($request->filled('status'), function ($q) use ($request) {
+                return $q->where('status', $request->status);
+            });
+
+            $query->when($request->filled('type'), function ($q) use ($request) {
+                return $q->where('type', $request->type);
+            });
+
+            $assignments = $query->latest()->paginate((int) $request->input('length', 10));
+
+            return response()->json([
+                'draw' => (int) $request->input('draw', 1),
+                'recordsTotal' => $assignments->total(),
+                'recordsFiltered' => $assignments->total(),
+                'data' => $assignments->items(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al cargar asignaciones.', 'error' => $e->getMessage()], 500);
         }
-
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
-        $assignments = $query->paginate((int) $request->input('length', 10));
-
-        return response()->json($assignments);
     }
 
     /**
      * Get Glovo metrics for a rider.
+     * Retorna datos paginados en el formato correcto para DataTables.
      */
-    public function getGlovoMetrics(Request $request, Rider $rider): JsonResponse
+        public function getGlovoMetrics(Request $request, Rider $rider): JsonResponse
     {
-        $metrics = $rider->glovoMetrics()->paginate((int) $request->input('length', 10));
+        try {
+            // El método glovoMetrics() del modelo Rider ahora contiene la lógica correcta
+            $metrics = $rider->glovoMetrics()->paginate((int) $request->input('length', 10));
 
-        return response()->json($metrics);
+            return response()->json([
+                'draw' => (int) $request->input('draw', 1),
+                'recordsTotal' => $metrics->total(),
+                'recordsFiltered' => $metrics->total(),
+                'data' => $metrics->items(),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al cargar métricas.', 'error' => $e->getMessage()], 500);
+        }
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Rider extends Authenticatable
 {
@@ -51,10 +52,26 @@ class Rider extends Authenticatable
     }
 
     /**
-     * Get the Glovo metrics for the rider.
+     * Obtiene las métricas de Glovo para el rider a través de sus asignaciones.
+     * La relación es indirecta: Rider -> Assignments -> Accounts -> Metrics.
      */
-    public function glovoMetrics(): HasMany
+    public function glovoMetrics()
     {
-        return $this->hasMany(Metric::class, 'courier_id', 'courier_id');
+        // Obtiene los courier_ids de las cuentas asignadas a este rider
+        $courierIds = $this->assignments()
+            ->with('account')
+            ->get()
+            ->pluck('account.courier_id');
+
+        // Retorna las métricas que coincidan con esos courier_ids
+        return Metric::whereIn('courier_id', $courierIds);
+    }
+
+    /**
+     * Define la relación con las asignaciones (Assignments).
+     */
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class);
     }
 }

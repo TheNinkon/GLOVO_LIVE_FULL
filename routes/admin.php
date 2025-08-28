@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RiderController as AdminRiderController;
+use App\Http\Controllers\Admin\Rider\MetricsController as AdminRiderMetricsController;
 use App\Http\Controllers\Admin\ForecastController;
 use App\Http\Controllers\Admin\AccountController as AdminAccountController;
 use App\Http\Controllers\Admin\AssignmentController as AdminAssignmentController;
@@ -32,8 +33,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // CRUDs de Riders
         Route::get('/riders/list', [AdminRiderController::class, 'list'])->name('riders.list');
         Route::get('/riders/{rider}/assignments', [AdminRiderController::class, 'getPrefacturaAssignments'])->name('riders.assignments');
-        Route::get('/riders/{rider}/metrics', [AdminRiderController::class, 'getGlovoMetrics'])->name('riders.metrics');
         Route::resource('/riders', AdminRiderController::class);
+
+        // Módulo de Métricas por Rider (dentro de la carpeta del rider)
+        Route::get('/riders/{id}/metrics', [AdminRiderMetricsController::class, 'index'])->name('riders.metrics.index');
 
         // Otros CRUDs y funcionalidades
         Route::resource('/forecasts', ForecastController::class)->only(['index', 'create', 'store']);
@@ -50,7 +53,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Estado de Riders
         Route::get('/rider-status/{city?}/{week?}', [RiderStatusController::class, 'index'])->name('rider-status.index');
 
-        // --- Métricas de Operación ---
+        // --- Métricas de Operación (general) ---
         Route::get('/metrics', [MetricController::class, 'index'])->name('metrics.index');
         Route::get('/metrics/list', [MetricController::class, 'list'])->name('metrics.list');
         Route::get('/metrics/kpis', [MetricController::class, 'kpis'])->name('metrics.kpis');
