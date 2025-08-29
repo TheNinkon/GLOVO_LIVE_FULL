@@ -80,31 +80,29 @@
 
   <div class="card">
     <div class="card-header text-center">
-      <div class="d-flex justify-content-between align-items-center">
-        <a href="{{ $nav['prev'] ?? '#' }}"
-          class="btn btn-icon rounded-pill {{ !($nav['prev'] ?? null) ? 'disabled' : '' }}"><i
-            class="ti tabler-chevron-left"></i></a>
-        <div>
-          <h5 class="mb-0">{{ $nav['current'] }}</h5>
-          <div class="dropdown mt-1">
-            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="cityDropdown"
-              data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              {{ $selectedCity }}
-            </button>
-            <div class="dropdown-menu" aria-labelledby="cityDropdown">
-              @if (isset($availableCities))
-                @foreach ($availableCities as $city)
-                  <a class="dropdown-item"
-                    href="{{ route('admin.coverage.index', ['city' => $city, 'week' => $startOfWeek->format('Y-m-d')]) }}">{{ $city }}</a>
-                @endforeach
-              @endif
+      @if (isset($nav))
+        <div class="d-flex justify-content-between align-items-center">
+          <a href="{{ $nav['prev'] }}" class="btn btn-icon rounded-pill"><i class="ti ti-chevron-left"></i></a>
+          <div>
+            <h5 class="mb-0">{{ $nav['current'] }}</h5>
+            <div class="dropdown mt-1">
+              <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="cityDropdown"
+                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{ $selectedCity }}
+              </button>
+              <div class="dropdown-menu" aria-labelledby="cityDropdown">
+                @if (isset($availableCities))
+                  @foreach ($availableCities as $city)
+                    <a class="dropdown-item"
+                      href="{{ route('admin.coverage.index', ['city' => $city, 'week' => $startOfWeek->format('Y-m-d')]) }}">{{ $city }}</a>
+                  @endforeach
+                @endif
+              </div>
             </div>
           </div>
+          <a href="{{ $nav['next'] }}" class="btn btn-icon rounded-pill"><i class="ti ti-chevron-right"></i></a>
         </div>
-        <a href="{{ $nav['next'] ?? '#' }}"
-          class="btn btn-icon rounded-pill {{ !($nav['next'] ?? null) ? 'disabled' : '' }}"><i
-            class="ti tabler-chevron-right"></i></a>
-      </div>
+      @endif
     </div>
 
     <div class="card-body">
@@ -145,11 +143,11 @@
                     @endphp
                     <td class="coverage-cell {{ $statusClass }}">
                       <div class="metric-value" title="Forecast">
-                        <i class="ti tabler-cloud text-secondary"></i>
+                        <i class="ti ti-cloud text-secondary"></i>
                         <span>{{ $slot['demand'] }}</span>
                       </div>
                       <div class="metric-value" title="Tus trabajadores">
-                        <i class="ti tabler-user-check text-success"></i>
+                        <i class="ti ti-user-check text-success"></i>
                         <span>{{ $slot['booked'] }}</span>
                       </div>
                     </td>
@@ -161,9 +159,33 @@
         </div>
       @else
         <div class="alert alert-warning text-center">
-          {{ $error ?? 'No hay datos de cobertura para mostrar.' }}
+          @if (isset($error))
+            {{ $error }}
+          @else
+            No hay datos de cobertura para mostrar.
+          @endif
         </div>
       @endif
     </div>
   </div>
+@endsection
+
+@section('page-script')
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const clipboard = new ClipboardJS('.copy-btn');
+      clipboard.on('success', function(e) {
+        const icon = e.trigger.querySelector('.ti');
+        if (icon) {
+          icon.classList.replace('tabler-copy', 'tabler-check');
+          e.trigger.classList.add('btn-success');
+          setTimeout(() => {
+            icon.classList.replace('tabler-check', 'tabler-copy');
+            e.trigger.classList.remove('btn-success');
+          }, 2000);
+        }
+        e.clearSelection();
+      });
+    });
+  </script>
 @endsection

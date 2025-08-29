@@ -10,21 +10,19 @@ use App\Models\Account;
 use Carbon\Carbon;
 use Illuminate\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Http\Request;
 
 class RiderStatusController extends Controller
 {
-    public function index($city = null, $week = null): View
+    public function index(Request $request): View
     {
         Carbon::setLocale(config('app.locale'));
 
         $availableCities = Forecast::distinct()->pluck('city')->sort();
-        if ($availableCities->isEmpty()) {
-            return view('content.admin.rider-status.index')->with('error', 'No hay forecasts subidos en el sistema.');
-        }
+        $selectedCity = $request->input('city') ?? $availableCities->first();
 
-        $selectedCity = $city ?? $availableCities->first();
         try {
-            $startOfWeek = $week ? Carbon::parse($week)->startOfWeek(Carbon::MONDAY) : Carbon::now()->startOfWeek(Carbon::MONDAY);
+            $startOfWeek = $request->input('week') ? Carbon::parse($request->input('week'))->startOfWeek(Carbon::MONDAY) : Carbon::now()->startOfWeek(Carbon::MONDAY);
         } catch (\Exception $e) {
             $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
         }
@@ -36,19 +34,10 @@ class RiderStatusController extends Controller
             'current' => $startOfWeek->translatedFormat('j M') . ' - ' . $endOfWeek->translatedFormat('j M, Y'),
         ];
 
-        $forecast = Forecast::where('city', $selectedCity)
-            ->where('week_start_date', $startOfWeek)
-            ->first();
-
-        if (!$forecast) {
-            return view('content.admin.rider-status.index', compact('selectedCity', 'nav', 'availableCities', 'startOfWeek'))
-                ->with('error', "No se encontró un forecast para la ciudad de {$selectedCity} en esta semana.");
-        }
-
         $riders = Rider::where('city', $selectedCity)
             ->where('status', 'active')
-            ->with(['schedules' => function ($query) use ($forecast) {
-                $query->where('forecast_id', $forecast->id)->orderBy('slot_date')->orderBy('slot_time');
+            ->with(['schedules' => function ($query) use ($startOfWeek, $endOfWeek) {
+                $query->whereBetween('slot_date', [$startOfWeek, $endOfWeek])->orderBy('slot_date')->orderBy('slot_time');
             }])
             ->get();
 
@@ -69,6 +58,7 @@ class RiderStatusController extends Controller
             );
         });
 
+        // La vista siempre recibirá estas variables para evitar errores de variable indefinida.
         return view('content.admin.rider-status.index', compact('riders', 'selectedCity', 'nav', 'availableCities', 'startOfWeek'));
     }
 
@@ -95,9 +85,7 @@ class RiderStatusController extends Controller
                 $slotTime = Carbon::parse($slot->slot_time);
                 $slotEndTime = $slotTime->copy()->addMinutes(30);
 
-                // Si es el primer slot o hay un hueco (el slot no es consecutivo)
                 if ($currentBlock === null || $slotTime->diffInMinutes(Carbon::parse($currentBlock['end_time'])) > 0) {
-                    // Si el bloque anterior existe, lo guardamos
                     if ($currentBlock !== null) {
                         $formattedDate = Carbon::parse($currentBlock['date'])->format('d/m/Y');
                         $finalTextLines[] = implode("\t", [
@@ -110,19 +98,15 @@ class RiderStatusController extends Controller
                         ]);
                     }
 
-                    // Creamos un nuevo bloque
                     $currentBlock = [
                         'date' => $slot->slot_date->format('Y-m-d'),
                         'start_time' => $slot->slot_time->format('H:i'),
                         'end_time' => $slotEndTime->format('H:i'),
                     ];
                 } else {
-                    // El slot es consecutivo, extendemos la hora de finalización del bloque
                     $currentBlock['end_time'] = $slotEndTime->format('H:i');
                 }
             }
-
-            // Después del bucle, procesar el último bloque
             if ($currentBlock !== null) {
                 $formattedDate = Carbon::parse($currentBlock['date'])->format('d/m/Y');
                 $finalTextLines[] = implode("\t", [
@@ -135,7 +119,6 @@ class RiderStatusController extends Controller
                 ]);
             }
         }
-
         return implode("\n", $finalTextLines);
     }
 }

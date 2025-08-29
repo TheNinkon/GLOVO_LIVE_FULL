@@ -4,86 +4,77 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Forecast;
-use App\Models\Schedule;
+use App\Models\Rider;
+use App\Models\Schedule; // 👈 Importación del modelo Schedule
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Collection;
 
 class CoverageController extends Controller
 {
-    public function index($city = null, $week = null): View
+    public function index(Request $request): View
     {
         Carbon::setLocale(config('app.locale'));
+
+        // Obtener todas las ciudades disponibles a partir de los forecasts.
         $availableCities = Forecast::distinct()->pluck('city')->sort();
 
-        if ($availableCities->isEmpty()) {
-            return view('content.admin.coverage.index')->with('error', 'No hay forecasts subidos en el sistema.');
-        }
-
-        $selectedCity = $city ?? $availableCities->first();
-
+        // Determinar la ciudad y semana seleccionadas
+        $selectedCity = $request->input('city') ?? $availableCities->first();
         try {
-            $startOfWeek = $week ? Carbon::parse($week)->startOfWeek(Carbon::MONDAY) : Carbon::now()->startOfWeek(Carbon::MONDAY);
+            $startOfWeek = $request->input('week') ? Carbon::parse($request->input('week'))->startOfWeek(Carbon::MONDAY) : Carbon::now()->startOfWeek(Carbon::MONDAY);
         } catch (\Exception $e) {
             $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
         }
-
         $endOfWeek = $startOfWeek->copy()->endOfWeek(Carbon::SUNDAY);
 
-        $forecast = Forecast::where('city', $selectedCity)
-            ->where('week_start_date', $startOfWeek)
-            ->first();
-
+        // Definir la variable de navegación para la vista
         $nav = [
             'prev' => route('admin.coverage.index', ['city' => $selectedCity, 'week' => $startOfWeek->clone()->subWeek()->format('Y-m-d')]),
             'next' => route('admin.coverage.index', ['city' => $selectedCity, 'week' => $startOfWeek->clone()->addWeek()->format('Y-m-d')]),
             'current' => $startOfWeek->translatedFormat('j M') . ' - ' . $endOfWeek->translatedFormat('j M, Y'),
         ];
 
-        if (!$forecast) {
-            return view('content.admin.coverage.index', compact('selectedCity', 'nav', 'availableCities', 'startOfWeek', 'endOfWeek'))
-                ->with('error', "No se encontró un forecast para la ciudad de {$selectedCity} en esta semana.");
-        }
-
-        $bookedSlots = Schedule::where('forecast_id', $forecast->id)
-            ->selectRaw('slot_date, slot_time, COUNT(*) as count')
-            ->groupBy('slot_date', 'slot_time')
-            ->get()
-            ->keyBy(fn($item) => $item->slot_date->format('Y-m-d') . '_' . $item->slot_time->format('H:i:s'));
-
         $days = [];
-        for ($i=0; $i < 7; $i++) {
-            $currentDate = $startOfWeek->clone()->addDays($i);
+        $day = $startOfWeek->clone();
+        for ($i = 0; $i < 7; $i++) {
             $days[] = [
-                'key' => strtolower($currentDate->format('D')),
-                'name' => $currentDate->translatedFormat('D'),
-                'date' => $currentDate->format('d/m'),
-                'full_date' => $currentDate->format('Y-m-d'),
+                'name' => $day->translatedFormat('D'),
+                'date' => $day->format('j/m'),
+                'key' => strtolower($day->translatedFormat('D')),
             ];
+            $day->addDay();
         }
 
-        $timeSlots = collect(CarbonPeriod::create('00:00', '30 minutes', '23:30'))->map(fn ($time) => $time->format('H:i'));
+        $timeSlots = [];
+        for ($i = 0; $i < 48; $i++) {
+            $timeSlots[] = Carbon::createFromTime(0, 0, 0)->addMinutes(30 * $i)->format('H:i');
+        }
 
-        $coverageData = [];
-        foreach ($days as $day) {
-            foreach ($timeSlots as $time) {
-                $timeCarbon = Carbon::parse($time);
-                $slotIdentifier = $day['full_date'] . '_' . $timeCarbon->format('H:i:s');
-                $demand = $forecast->forecast_data[$day['key']][$time] ?? 0;
-                $booked = $bookedSlots[$slotIdentifier]->count ?? 0;
-                $coverageData[$day['key']][$time] = ['demand' => $demand, 'booked' => $booked];
+        $coverageData = null;
+        $forecast = Forecast::where('city', $selectedCity)->where('week_start_date', $startOfWeek)->first();
+
+        if ($forecast) {
+            $riders = Rider::where('city', $selectedCity)->where('status', 'active')->get();
+            $schedules = Schedule::where('forecast_id', $forecast->id)->get();
+
+            $coverageData = [];
+            foreach ($days as $day) {
+                foreach ($timeSlots as $time) {
+                    $coverageData[$day['key']][$time] = ['demand' => $forecast->forecast_data[strtolower($day['key'])][$time] ?? 0, 'booked' => 0];
+                }
+            }
+
+            foreach ($schedules as $schedule) {
+                $dayKey = strtolower(Carbon::parse($schedule->slot_date)->translatedFormat('D'));
+                $timeKey = Carbon::parse($schedule->slot_time)->format('H:i');
+                if (isset($coverageData[$dayKey][$timeKey])) {
+                    $coverageData[$dayKey][$timeKey]['booked']++;
+                }
             }
         }
 
-        return view('content.admin.coverage.index', compact(
-            'coverageData',
-            'selectedCity',
-            'nav',
-            'availableCities',
-            'startOfWeek',
-            'endOfWeek',
-            'days',
-            'timeSlots'
-        ));
+        return view('content.admin.coverage.index', compact('availableCities', 'selectedCity', 'nav', 'startOfWeek', 'days', 'timeSlots', 'coverageData'));
     }
 }

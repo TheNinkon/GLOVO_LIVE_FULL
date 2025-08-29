@@ -11,33 +11,37 @@
     <span class="text-muted fw-light">Admin /</span> Estado de Riders
   </h4>
 
+  @if (isset($error))
+    <div class="alert alert-danger text-center">
+      {{ $error }}
+    </div>
+  @endif
+
   <div class="card">
     <div class="card-header text-center">
-      <div class="d-flex justify-content-between align-items-center">
-        <a href="{{ $nav['prev'] ?? '#' }}"
-          class="btn btn-icon rounded-pill {{ !($nav['prev'] ?? null) ? 'disabled' : '' }}"><i
-            class="ti tabler-chevron-left"></i></a>
-        <div>
-          <h5 class="mb-0">{{ $nav['current'] }}</h5>
-          <div class="dropdown mt-1">
-            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="cityDropdown"
-              data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              {{ $selectedCity }}
-            </button>
-            <div class="dropdown-menu" aria-labelledby="cityDropdown">
-              @if (isset($availableCities))
-                @foreach ($availableCities as $city)
-                  <a class="dropdown-item"
-                    href="{{ route('admin.rider-status.index', ['city' => $city, 'week' => $startOfWeek->format('Y-m-d')]) }}">{{ $city }}</a>
-                @endforeach
-              @endif
+      @if (isset($nav) && isset($selectedCity))
+        <div class="d-flex justify-content-between align-items-center">
+          <a href="{{ $nav['prev'] }}" class="btn btn-icon rounded-pill"><i class="ti ti-chevron-left"></i></a>
+          <div>
+            <h5 class="mb-0">{{ $nav['current'] }}</h5>
+            <div class="dropdown mt-1">
+              <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="cityDropdown"
+                data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {{ $selectedCity }}
+              </button>
+              <div class="dropdown-menu" aria-labelledby="cityDropdown">
+                @if (isset($availableCities))
+                  @foreach ($availableCities as $city)
+                    <a class="dropdown-item"
+                      href="{{ route('admin.rider-status.index', ['city' => $city, 'week' => $startOfWeek->format('Y-m-d')]) }}">{{ $city }}</a>
+                  @endforeach
+                @endif
+              </div>
             </div>
           </div>
+          <a href="{{ $nav['next'] }}" class="btn btn-icon rounded-pill"><i class="ti ti-chevron-right"></i></a>
         </div>
-        <a href="{{ $nav['next'] ?? '#' }}"
-          class="btn btn-icon rounded-pill {{ !($nav['next'] ?? null) ? 'disabled' : '' }}"><i
-            class="ti tabler-chevron-right"></i></a>
-      </div>
+      @endif
     </div>
 
     <div class="card-body">
@@ -79,7 +83,7 @@
                       style="font-family: monospace; font-size: 0.9rem;" rows="{{ substr_count($rider->formatted_schedule, "\n") + 1 }}">{{ $rider->formatted_schedule }}</textarea>
                     <button class="btn btn-sm btn-icon btn-outline-secondary copy-btn ms-2 flex-shrink-0"
                       data-clipboard-text="{{ $rider->formatted_schedule }}" title="Copiar para Excel">
-                      <i class="ti tabler-copy"></i>
+                      <i class="ti ti-copy"></i>
                     </button>
                   </div>
                 </div>
@@ -89,7 +93,11 @@
         </div>
       @else
         <div class="alert alert-warning text-center">
-          {{ $error ?? 'No hay riders con horarios en esta ciudad o no se encontró un forecast para esta semana.' }}
+          @if (isset($error))
+            {{ $error }}
+          @else
+            No hay riders activos para la ciudad y semana seleccionada.
+          @endif
         </div>
       @endif
     </div>

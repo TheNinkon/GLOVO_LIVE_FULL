@@ -1,14 +1,18 @@
+@extends('layouts/layoutMaster')
+@section('title', 'Gestión de Forecasts')
+
 @section('content')
-  <div class="d-flex justify-content-between align-items-center py-3 mb-4">
-    <h4 class="mb-0">
-      <span class="text-muted fw-light">Admin /</span> Forecasts
-    </h4>
-    <a href="{{ route('admin.forecasts.create') }}" class="btn btn-primary">
-      <i class="ti tabler-plus me-1"></i> Importar Forecast
-    </a>
-  </div>
+  <h4 class="py-3 mb-4">
+    <span class="text-muted fw-light">Admin /</span> Forecasts
+  </h4>
 
   <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="m-0">Listado de Forecasts</h5>
+      <a href="{{ route('admin.forecasts.create') }}" class="btn btn-primary">
+        <i class="ti ti-plus me-1"></i> Importar Forecast
+      </a>
+    </div>
     <div class="card-body">
       <table class="table">
         <thead>
@@ -31,7 +35,7 @@
                   @csrf
                   @method('DELETE')
                   <button type="submit" class="btn btn-danger btn-sm">
-                    <i class="ti tabler-trash me-1"></i> Eliminar
+                    <i class="ti ti-trash me-1"></i> Eliminar
                   </button>
                 </form>
               </td>
