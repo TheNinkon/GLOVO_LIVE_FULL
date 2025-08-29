@@ -11,6 +11,12 @@
       "name": "Mis Métricas",
       "icon": "menu-icon ti tabler-report-analytics",
       "slug": "rider.metrics.index"
+    },
+    {
+      "url": "rider/schedule",
+      "name": "Reservar Horas",
+      "icon": "menu-icon ti tabler-calendar",
+      "slug": "rider.schedule.index"
     }
   ]
 }

@@ -13,31 +13,6 @@ use Illuminate\Http\JsonResponse;
 class MetricsController extends Controller
 {
     /**
-     * Muestra la vista de métricas detalladas para un rider específico.
-     *
-     * @param int $id El ID del rider.
-     */
-    public function index($id)
-    {
-        $rider = Rider::findOrFail($id);
-
-        $transports = Metric::query()
-            ->whereNotNull('transport')
-            ->distinct()
-            ->orderBy('transport')
-            ->pluck('transport');
-
-        // Se asume que en el futuro la lista de ciudades puede venir de otro lado
-        $cities = Metric::query()
-            ->whereNotNull('ciudad')
-            ->distinct()
-            ->orderBy('ciudad')
-            ->pluck('ciudad');
-
-        return view('content.admin.riders.metrics.index', compact('rider', 'transports', 'cities'));
-    }
-
-    /**
      * Devuelve la lista paginada de métricas (JSON) con filtros para un rider.
      *
      * @param \Illuminate\Http\Request $request
@@ -50,7 +25,9 @@ class MetricsController extends Controller
             $query = Metric::query()->from('glovo_metrics as m')
                 ->select(
                     'm.*',
-                    DB::raw("COALESCE(r.full_name, 'Sin Asignar') as rider_name")
+                    DB::raw("COALESCE(r.full_name, 'Sin Asignar') as rider_name"),
+                    DB::raw("m.no_show as no_show_percentage"), // Asumo que ya tienes esta columna
+                    DB::raw("m.ineligible as ineligible_percentage") // Asumo que ya tienes esta columna
                 )
                 ->leftJoin('accounts as a', 'a.courier_id', '=', 'm.courier_id')
                 ->leftJoin('assignments as ass', function ($join) {
@@ -89,6 +66,18 @@ class MetricsController extends Controller
                 ->orderBy('m.courier_id')
                 ->paginate($perPage)
                 ->appends($request->all());
+
+            // Añadir cálculos de Ganancia/Costo/Utilidad a cada métrica
+            $metrics->getCollection()->transform(function ($metric) use ($request) {
+                $costoPedido = (float) $request->input('cost_per_order', 5.50);
+                $costoHora   = (float) $request->input('cost_per_hour', 12.00);
+
+                $metric->ganancia_bruta = $metric->pedidos_entregados * $costoPedido;
+                $metric->costo_operativo = $metric->horas * $costoHora;
+                $metric->utilidad_neta = $metric->ganancia_bruta - $metric->costo_operativo;
+
+                return $metric;
+            });
 
             return response()->json($metrics);
 
@@ -143,7 +132,9 @@ class MetricsController extends Controller
                 SUM(horas) as total_hours,
                 AVG(cancelados) as avg_canceled,
                 AVG(reasignaciones) as avg_reassignments,
-                AVG(tiempo_promedio) as avg_cdt
+                AVG(tiempo_promedio) as avg_cdt,
+                AVG(no_show) as avg_no_show,
+                AVG(ineligible) as avg_ineligible
             ')->first();
 
             $totalOrders = (float) ($stats->total_orders ?? 0);
@@ -151,6 +142,8 @@ class MetricsController extends Controller
             $avgCanceled = (float) ($stats->avg_canceled ?? 0);
             $avgReassign = (float) ($stats->avg_reassignments ?? 0);
             $avgCdt      = (float) ($stats->avg_cdt ?? 0);
+            $avgNoShow   = (float) ($stats->avg_no_show ?? 0);
+            $avgIneligible = (float) ($stats->avg_ineligible ?? 0);
 
             $avgRatio = $totalHours > 0 ? ($totalOrders / $totalHours) : 0.0;
 
@@ -171,6 +164,8 @@ class MetricsController extends Controller
                 'costo_total'       => round($costoTotal, 2),
                 'ganancia_total'    => round($gananciaTotal, 2),
                 'utilidad'          => round($utilidad, 2),
+                'avg_no_show'       => round($avgNoShow, 2),
+                'avg_ineligible'    => round($avgIneligible, 2),
             ]);
 
         } catch (\Exception $e) {

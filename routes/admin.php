@@ -39,7 +39,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/riders/{id}/metrics', [AdminRiderMetricsController::class, 'index'])->name('riders.metrics.index');
 
         // Otros CRUDs y funcionalidades
-        Route::resource('/forecasts', ForecastController::class)->only(['index', 'create', 'store']);
+        Route::resource('/forecasts', ForecastController::class)->only(['index', 'create', 'store', 'destroy']);
         Route::resource('/accounts', AdminAccountController::class);
 
         // Asignaciones

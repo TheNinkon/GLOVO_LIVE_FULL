@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Forecast extends Model
 {
@@ -14,12 +14,33 @@ class Forecast extends Model
         'city',
         'week_start_date',
         'forecast_data',
-        'booking_deadline', // <-- AÑADIR ESTA LÍNEA
+        'booking_deadline',
     ];
 
     protected $casts = [
+        'forecast_data' => 'array',
         'week_start_date' => 'date',
-        'forecast_data' => AsArrayObject::class, // Trata el JSON como un objeto
-        'booking_deadline' => 'datetime', // <-- AÑADIR ESTA LÍNEA
+        'booking_deadline' => 'datetime',
     ];
+
+    /**
+     * Get the schedules for the forecast.
+     */
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
+    }
+
+    /**
+     * The "booting" method of the model.
+     */
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::deleting(function (Forecast $forecast) {
+            // Delete all associated schedules before deleting the forecast
+            $forecast->schedules()->delete();
+        });
+    }
 }

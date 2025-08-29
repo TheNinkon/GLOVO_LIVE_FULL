@@ -6,28 +6,30 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Rider extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    /**
+     * Guard asociado al modelo.
+     * @var string
+     */
     protected $guard = 'rider';
 
     protected $fillable = [
         'full_name',
-        'email',
-        'phone',
         'dni',
         'city',
-        'address',
-        'birth_date',
-        'status',
+        'phone',
+        'email',
+        'password',
         'start_date',
-        'end_date',
+        'status',
+        'notes',
         'weekly_contract_hours',
         'edits_remaining',
-        'password',
     ];
 
     protected $hidden = [
@@ -38,40 +40,36 @@ class Rider extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'   => 'hashed',
+            'start_date' => 'date',
         ];
     }
 
+    /** Historial de asignaciones del rider */
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class);
+    }
+
+    /** Asignación activa (si existe) */
+    public function activeAssignment(): HasOne
+    {
+        return $this->hasOne(Assignment::class)->where('status', 'active');
+    }
+
     /**
-     * Get the prefactura assignments for the rider.
+     * Define la relación: Un Rider tiene muchos Schedules (horas reservadas).
+     */
+    public function schedules(): HasMany
+    {
+        return $this->hasMany(Schedule::class);
+    }
+
+    /**
+     * Define la relación: Un Rider tiene muchas asignaciones de prefactura.
      */
     public function prefacturaAssignments(): HasMany
     {
         return $this->hasMany(PrefacturaAssignment::class);
-    }
-
-    /**
-     * Obtiene las métricas de Glovo para el rider a través de sus asignaciones.
-     * La relación es indirecta: Rider -> Assignments -> Accounts -> Metrics.
-     */
-    public function glovoMetrics()
-    {
-        // Obtiene los courier_ids de las cuentas asignadas a este rider
-        $courierIds = $this->assignments()
-            ->with('account')
-            ->get()
-            ->pluck('account.courier_id');
-
-        // Retorna las métricas que coincidan con esos courier_ids
-        return Metric::whereIn('courier_id', $courierIds);
-    }
-
-    /**
-     * Define la relación con las asignaciones (Assignments).
-     */
-    public function assignments(): HasMany
-    {
-        return $this->hasMany(Assignment::class);
     }
 }

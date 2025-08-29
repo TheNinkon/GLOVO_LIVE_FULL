@@ -3,21 +3,26 @@
     <thead>
       <tr>
         <th>Fecha</th>
+        <th>Día</th>
         <th>Courier ID</th>
         <th>Ciudad</th>
-        <th>Transporte</th>
-        <th>Pedidos Entregados</th>
+        <th>Vehículo</th>
+        <th>Pedidos</th>
         <th>Horas</th>
+        <th>Eficiencia</th>
         <th>Cancelados</th>
-        <th>Reasignaciones</th>
-        <th>Tiempo Promedio</th>
+        <th>Reasignados</th>
+        <th>% NO SHOW</th>
+        <th>% Ineligible</th>
+        <th>CDT (min)</th>
+        <th>Ganancia</th>
+        <th>Costo</th>
+        <th>Neta</th>
       </tr>
     </thead>
     <tbody id="metrics-table-body">
-      {{-- Los datos de las métricas se insertarán aquí --}}
     </tbody>
   </table>
   <div class="d-flex justify-content-center mt-3" id="pagination-container">
-    {{-- La paginación se renderizará aquí --}}
   </div>
 </div>

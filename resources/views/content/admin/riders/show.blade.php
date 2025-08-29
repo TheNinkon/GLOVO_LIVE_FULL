@@ -15,21 +15,16 @@
 @endsection
 
 @section('page-script')
-  @vite([
-      'resources/assets/js/modal-edit-user.js',
-      'resources/assets/js/app-user-view.js',
-      'resources/assets/js/app-user-view-account.js',
-      'resources/assets/js/admin-rider-metrics.js', // Corregido: apunto al script de métricas
-  ])
+  @vite(['resources/assets/js/modal-edit-user.js', 'resources/assets/js/app-user-view.js', 'resources/assets/js/app-user-view-account.js', 'resources/assets/js/admin-rider-metrics.js'])
 @endsection
 
 @section('content')
-  <div class="row">
-    <div class="col-xl-4 col-lg-5 order-1 order-md-0">
+  <div class="row" id="user-profile-view">
+    <div class="col-xl-4 col-lg-5 order-1 order-md-0" id="profile-sidebar">
       <div class="card mb-6">
         <div class="card-body pt-12">
           <div class="d-flex justify-content-end mb-3">
-            <button class="btn btn-label-secondary btn-sm layout-menu-toggle">
+            <button class="btn btn-label-secondary btn-sm toggle-profile-sidebar">
               <i class="ti ti-menu-2"></i>
             </button>
           </div>
@@ -49,7 +44,7 @@
             <div class="d-flex align-items-center me-5 gap-4">
               <div class="avatar">
                 <div class="avatar-initial bg-label-primary rounded">
-                  <i class="ti ti-clock icon-lg"></i>
+                  <i class="ti ti-clock-hour-3 ti-lg"></i>
                 </div>
               </div>
               <div>
@@ -60,7 +55,7 @@
             <div class="d-flex align-items-center gap-4">
               <div class="avatar">
                 <div class="avatar-initial bg-label-primary rounded">
-                  <i class="ti ti-pencil icon-lg"></i>
+                  <i class="ti ti-pencil ti-lg"></i>
                 </div>
               </div>
               <div>
@@ -108,17 +103,17 @@
         </div>
       </div>
     </div>
-    <div class="col-xl-8 col-lg-7 order-0 order-md-1">
+    <div class="col-xl-8 col-lg-7 order-0 order-md-1" id="profile-content">
       <div class="nav-align-top">
         <ul class="nav nav-pills flex-column flex-md-row flex-wrap mb-6 row-gap-2">
           <li class="nav-item">
             <a class="nav-link active" data-bs-toggle="tab" href="#metrics-tab" role="tab" aria-selected="true">
-              <i class="ti ti-chart-bar icon-sm me-1_5"></i>Métricas
+              <i class="ti ti-chart-bar ti-sm me-1_5"></i>Métricas
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="tab" href="#assignments-tab" role="tab" aria-selected="false">
-              <i class="ti ti-history icon-sm me-1_5"></i>Asignaciones
+              <i class="ti ti-history ti-sm me-1_5"></i>Asignaciones
             </a>
           </li>
         </ul>
@@ -127,7 +122,7 @@
         <div class="tab-pane fade show active" id="metrics-tab" role="tabpanel">
           @include(
               'content.admin.riders.metrics.partials._metrics_content',
-              compact('rider', 'transports', 'cities'))
+              compact('rider', 'transports'))
         </div>
         <div class="tab-pane fade" id="assignments-tab" role="tabpanel">
           @include('content.admin.riders.metrics.partials._assignments_table', [

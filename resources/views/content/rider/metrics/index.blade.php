@@ -3,11 +3,11 @@
 @section('title', 'Mis Métricas')
 
 @section('vendor-style')
-  @vite(['resources/assets/vendor/libs/flatpickr/flatpickr.scss', 'resources/assets/vendor/libs/sweetalert2/sweetalert2.scss'])
+  @vite(['resources/assets/vendor/libs/sweetalert2/sweetalert2.scss', 'resources/assets/vendor/libs/flatpickr/flatpickr.scss'])
 @endsection
 
 @section('vendor-script')
-  @vite(['resources/assets/vendor/libs/flatpickr/flatpickr.js', 'resources/assets/vendor/libs/flatpickr/l10n/es.js', 'resources/assets/vendor/libs/sweetalert2/sweetalert2.js'])
+  @vite(['resources/assets/vendor/libs/sweetalert2/sweetalert2.js', 'resources/assets/vendor/libs/flatpickr/flatpickr.js'])
 @endsection
 
 @section('page-script')
@@ -15,47 +15,63 @@
 @endsection
 
 @section('content')
-  <h4 class="py-3 mb-4">
-    <span class="text-muted fw-light">Rider /</span> Mis Métricas
-  </h4>
-  <div class="card">
-    <div class="card-header border-top">
-      <h5 class="card-title mb-0">Filtros de Búsqueda</h5>
-    </div>
-    <div class="card-body">
-      <div class="row g-3">
-        <div class="col-md-3">
-          <label class="form-label">Rango de Fechas:</label>
-          <input type="text" id="filter-date-range" class="form-control" placeholder="YYYY-MM-DD a YYYY-MM-DD" />
-        </div>
-        <div class="col-md-3 d-flex align-items-end">
-          <button id="apply-filters" class="btn btn-primary me-2">Aplicar</button>
-          <button id="clear-filters" class="btn btn-label-secondary">Reiniciar</button>
-        </div>
-      </div>
-    </div>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="py-3 mb-0">
+      <span class="text-muted fw-light">Mi Perfil /</span> Métricas
+    </h4>
+  </div>
+
+  {{-- KPIs de motivación --}}
+  <div class="row g-4 mb-4" id="kpis-container">
+    {{-- Los KPIs se cargarán dinámicamente aquí --}}
   </div>
 
   <div class="card mt-4">
-    <h5 class="card-header">Mis Registros Diarios</h5>
-    <div class="table-responsive text-nowrap">
-      <table class="table table-striped">
+    <div class="card-datatable table-responsive p-3">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="card-title mb-0">Historial de Rendimiento</h5>
+        <button id="filter-button" class="btn btn-primary">
+          <i class="ti ti-filter me-1"></i> Aplicar Filtros
+        </button>
+      </div>
+      <form id="metrics-filters-form">
+        <div class="row g-3">
+          <div class="col-md-6 col-lg-6">
+            <label class="form-label" for="date_range">Rango de Fechas</label>
+            <input type="text" id="date_range" name="date_range" class="form-control flatpickr-range">
+          </div>
+          <div class="col-md-6 col-lg-6">
+            <label class="form-label" for="transport">Transporte</label>
+            <select id="transport" name="transport" class="form-select text-capitalize">
+              <option value="">Selecciona un transporte</option>
+              @foreach ($transports as $transport)
+                <option value="{{ $transport }}">{{ $transport }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
         <thead>
           <tr>
             <th>Fecha</th>
-            <th>Ciudad</th>
+            <th>Día</th>
             <th>Pedidos</th>
             <th>Horas</th>
-            <th>CDT (min)</th>
+            <th>Eficiencia</th>
+            <th>Cancelaciones</th>
+            <th>Reasignaciones</th>
+            <th>Tiempo Promedio</th>
           </tr>
         </thead>
         <tbody id="metrics-table-body">
-          {{-- Las filas se insertarán aquí con JavaScript --}}
         </tbody>
       </table>
-    </div>
-    <div class="card-footer d-flex justify-content-center">
-      <div id="pagination-links" class="d-flex justify-content-center"></div>
+      <div class="d-flex justify-content-center mt-3" id="pagination-container">
+      </div>
     </div>
   </div>
 @endsection

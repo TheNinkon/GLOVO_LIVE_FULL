@@ -10,6 +10,11 @@ use Carbon\Carbon;
 
 class ForecastController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Forecast::class, 'forecast');
+    }
+
     public function index()
     {
         $forecasts = Forecast::orderBy('week_start_date', 'desc')->paginate(15);
@@ -32,7 +37,7 @@ class ForecastController extends Controller
 
         $path = $request->file('forecast_file')->getRealPath();
         $csv = Reader::createFromPath($path, 'r');
-        $csv->setHeaderOffset(0); // La primera fila es la cabecera
+        $csv->setHeaderOffset(0);
 
         $records = $csv->getRecords();
         $forecastData = [
@@ -55,11 +60,17 @@ class ForecastController extends Controller
             [
                 'city' => $request->city,
                 'week_start_date' => Carbon::parse($request->week_start_date)->startOfWeek(),
-                'booking_deadline' => $request->booking_deadline, // <-- GUARDAR EL CAMPO
+                'booking_deadline' => $request->booking_deadline,
             ],
             ['forecast_data' => $forecastData]
         );
 
         return redirect()->route('admin.forecasts.index')->with('success', 'Forecast importado correctamente.');
+    }
+
+    public function destroy(Forecast $forecast)
+    {
+        $forecast->delete();
+        return redirect()->route('admin.forecasts.index')->with('success', 'Forecast y horas asociadas eliminados correctamente.');
     }
 }

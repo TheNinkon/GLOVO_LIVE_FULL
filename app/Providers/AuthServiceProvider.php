@@ -13,6 +13,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Rider::class => RiderPolicy::class,
         Account::class => AccountPolicy::class, // <-- Añadir esta línea
+        Forecast::class => ForecastPolicy::class,
     ];
 
     public function boot(): void

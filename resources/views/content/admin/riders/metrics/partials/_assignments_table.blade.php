@@ -26,7 +26,7 @@
               @if ($assignment->status == 'active')
                 <form action="{{ route('admin.assignments.end', $assignment->id) }}" method="POST" class="d-inline">
                   @csrf
-                  <button type="submit" class="btn btn-sm btn-danger">Terminar</button>
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="ti ti-x me-1"></i> Terminar</button>
                 </form>
               @endif
             </td>

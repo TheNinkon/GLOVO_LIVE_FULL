@@ -34,5 +34,6 @@ Route::prefix('rider')->name('rider.')->group(function () {
         // --- Métricas del Rider ---
         Route::get('/metrics', [RiderMetricsController::class, 'index'])->name('metrics.index');
         Route::get('/metrics/list', [RiderMetricsController::class, 'list'])->name('metrics.list');
+        Route::get('/metrics/kpis', [RiderMetricsController::class, 'kpis'])->name('metrics.kpis');
     });
 });

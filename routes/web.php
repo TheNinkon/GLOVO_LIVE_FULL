@@ -8,7 +8,7 @@ require __DIR__ . '/admin.php';
 
 // Carga las rutas para los riders
 require __DIR__ . '/rider.php';
-
+require __DIR__ . '/api.php';
 /*
 |--------------------------------------------------------------------------
 | Landing Page
