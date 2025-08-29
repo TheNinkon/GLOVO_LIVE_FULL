@@ -11,7 +11,7 @@
 @endsection
 
 @section('page-script')
-  @vite(['resources/assets/js/metrics-list.js'])
+  @vite(['resources/assets/js/admin/metrics/index.js'])
 @endsection
 
 @section('content')
@@ -20,8 +20,8 @@
       <span class="text-muted fw-light">Admin /</span> Métricas de Operación
     </h4>
     <button id="sync-button" class="btn btn-success">
-      {{-- Icono correcto de Tabler Icons (Vuexy usa prefijo ti ti-*) --}}
-      <i class="ti ti-refresh me-1"></i> Sincronizar Métricas
+      {{-- Corrección de la clase del ícono --}}
+      <i class="ti tabler-refresh me-1"></i> Sincronizar Métricas
     </button>
   </div>
 

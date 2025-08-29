@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const cityFilter = document.getElementById('filter-city');
   const transportFilter = document.getElementById('filter-transport');
   const courierIdFilter = document.getElementById('filter-courier-id');
-  const riderNameFilter = document.getElementById('filter-rider-name'); // NUEVO
+  const riderNameFilter = document.getElementById('filter-rider-name');
   const weekdayFilter = document.getElementById('filter-weekday');
   const costOrderFilter = document.getElementById('filter-cost-order');
   const costHourFilter = document.getElementById('filter-cost-hour');
@@ -27,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const kpiCosto = document.getElementById('kpi-costo-total');
   const kpiUtilidad = document.getElementById('kpi-utilidad');
 
-  // CORRECCIÓN: Configuración de la localización de flatpickr
   const fp = flatpickr(dateRangePicker, {
     mode: 'range',
     dateFormat: 'Y-m-d',
@@ -119,13 +118,18 @@ document.addEventListener('DOMContentLoaded', function () {
       tableBody.innerHTML = `
         <tr>
           <td colspan="14" class="text-center p-4">
-            No se encontraron resultados para los filtros seleccionados.
+            <i class="ti tabler-search text-info me-1"></i> No se encontraron resultados para los filtros seleccionados.
           </td>
         </tr>`;
       return;
     }
 
-    const vehicleIcons = { BICYCLE: '🚲', MOTORBIKE: '🛵', CAR: '🚗', SCOOTER: '🛴' };
+    const vehicleIcons = {
+      BICYCLE: '<i class="ti tabler-bike"></i>',
+      MOTORBIKE: '<i class="ti tabler-motorbike"></i>',
+      CAR: '<i class="ti tabler-car"></i>',
+      SCOOTER: '<i class="ti tabler-scooter"></i>'
+    };
     const costPerOrder = parseFloat(costOrderFilter.value) || 0;
     const costPerHour = parseFloat(costHourFilter.value) || 0;
 
@@ -189,7 +193,14 @@ document.addEventListener('DOMContentLoaded', function () {
     let linksHtml = '<ul class="pagination mb-0">';
     data.links.forEach(link => {
       const page = link.url ? new URL(link.url).searchParams.get('page') : null;
-      const label = (link.label || '').replace('&laquo;', '‹').replace('&raquo;', '›');
+      let label = link.label || '';
+
+      // Corrección de los textos de paginación
+      if (link.label === 'pagination.previous') {
+        label = '<i class="ti tabler-chevron-left ti-md"></i>';
+      } else if (link.label === 'pagination.next') {
+        label = '<i class="ti tabler-chevron-right ti-md"></i>';
+      }
 
       linksHtml += `
         <li class="page-item ${link.active ? 'active' : ''} ${!link.url ? 'disabled' : ''}">
@@ -251,47 +262,49 @@ document.addEventListener('DOMContentLoaded', function () {
     perPageSelect.addEventListener('change', () => fetchData(1));
   }
 
-  syncButton.addEventListener('click', async () => {
-    Swal.fire({
-      title: 'Sincronizando...',
-      text: 'Esto puede tardar unos minutos.',
-      allowOutsideClick: false,
-      showConfirmButton: false,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    });
-
-    try {
-      const response = await fetch('/admin/metrics/sync', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+  if (syncButton) {
+    syncButton.addEventListener('click', async () => {
+      Swal.fire({
+        title: 'Sincronizando...',
+        text: 'Esto puede tardar unos minutos.',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
       });
-      const data = await response.json();
 
-      if (response.ok) {
+      try {
+        const response = await fetch('/admin/metrics/sync', {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: '¡Sincronizado!',
+            text: data.success,
+            customClass: { confirmButton: 'btn btn-primary' },
+            buttonsStyling: false
+          }).then(() => {
+            fetchData(1);
+          });
+        } else {
+          throw new Error(data.error || 'Error desconocido.');
+        }
+      } catch (error) {
         Swal.fire({
-          icon: 'success',
-          title: '¡Sincronizado!',
-          text: data.success,
+          icon: 'error',
+          title: 'Error de Sincronización',
+          text: error.message || 'No se pudo conectar con el servidor.',
           customClass: { confirmButton: 'btn btn-primary' },
           buttonsStyling: false
-        }).then(() => {
-          fetchData(1);
         });
-      } else {
-        throw new Error(data.error || 'Error desconocido.');
       }
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error de Sincronización',
-        text: error.message || 'No se pudo conectar con el servidor.',
-        customClass: { confirmButton: 'btn btn-primary' },
-        buttonsStyling: false
-      });
-    }
-  });
+    });
+  }
 
   paginationLinks.addEventListener('click', e => {
     e.preventDefault();

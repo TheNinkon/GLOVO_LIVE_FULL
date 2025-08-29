@@ -2,6 +2,10 @@
 
 @section('title', 'Estado de Riders')
 
+@section('vendor-style')
+  @vite(['resources/assets/vendor/libs/animate-css/animate.scss'])
+@endsection
+
 @section('vendor-script')
   @vite(['resources/assets/vendor/libs/clipboard/clipboard.js'])
 @endsection
@@ -21,7 +25,8 @@
     <div class="card-header text-center">
       @if (isset($nav) && isset($selectedCity))
         <div class="d-flex justify-content-between align-items-center">
-          <a href="{{ $nav['prev'] }}" class="btn btn-icon rounded-pill"><i class="ti ti-chevron-left"></i></a>
+          {{-- Corrección: El ícono del chevron izquierdo es 'tabler-chevron-left' --}}
+          <a href="{{ $nav['prev'] }}" class="btn btn-icon rounded-pill"><i class="ti tabler-chevron-left"></i></a>
           <div>
             <h5 class="mb-0">{{ $nav['current'] }}</h5>
             <div class="dropdown mt-1">
@@ -39,7 +44,8 @@
               </div>
             </div>
           </div>
-          <a href="{{ $nav['next'] }}" class="btn btn-icon rounded-pill"><i class="ti ti-chevron-right"></i></a>
+          {{-- Corrección: El ícono del chevron derecho es 'tabler-chevron-right' --}}
+          <a href="{{ $nav['next'] }}" class="btn btn-icon rounded-pill"><i class="ti tabler-chevron-right"></i></a>
         </div>
       @endif
     </div>
@@ -83,7 +89,8 @@
                       style="font-family: monospace; font-size: 0.9rem;" rows="{{ substr_count($rider->formatted_schedule, "\n") + 1 }}">{{ $rider->formatted_schedule }}</textarea>
                     <button class="btn btn-sm btn-icon btn-outline-secondary copy-btn ms-2 flex-shrink-0"
                       data-clipboard-text="{{ $rider->formatted_schedule }}" title="Copiar para Excel">
-                      <i class="ti ti-copy"></i>
+                      {{-- Corrección: El ícono de copiar es 'tabler-copy' --}}
+                      <i class="ti tabler-copy"></i>
                     </button>
                   </div>
                 </div>

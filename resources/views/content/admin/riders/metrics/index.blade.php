@@ -13,7 +13,7 @@
 @endsection
 
 @section('page-script')
-  @vite(['resources/assets/js/admin-rider-metrics.js'])
+  @vite(['resources/assets/js/admin/rider/metrics/index.js'])
 @endsection
 
 @section('content')

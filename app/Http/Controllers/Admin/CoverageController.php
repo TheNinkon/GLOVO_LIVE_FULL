@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Forecast;
 use App\Models\Rider;
-use App\Models\Schedule; // 👈 Importación del modelo Schedule
+use App\Models\Schedule; // 👈 Agregado: Importación del modelo Schedule
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,10 +17,23 @@ class CoverageController extends Controller
     {
         Carbon::setLocale(config('app.locale'));
 
-        // Obtener todas las ciudades disponibles a partir de los forecasts.
         $availableCities = Forecast::distinct()->pluck('city')->sort();
 
-        // Determinar la ciudad y semana seleccionadas
+        // Si no hay forecasts, pasamos variables nulas para que la vista no falle.
+        if ($availableCities->isEmpty()) {
+            $selectedCity = 'No hay ciudades disponibles';
+            $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
+            $nav = [
+                'prev' => '#',
+                'next' => '#',
+                'current' => $startOfWeek->translatedFormat('j M') . ' - ' . $startOfWeek->copy()->endOfWeek(Carbon::SUNDAY)->translatedFormat('j M, Y'),
+            ];
+            $coverageData = null;
+            $days = [];
+
+            return view('content.admin.coverage.index', compact('availableCities', 'selectedCity', 'nav', 'startOfWeek', 'days', 'coverageData'));
+        }
+
         $selectedCity = $request->input('city') ?? $availableCities->first();
         try {
             $startOfWeek = $request->input('week') ? Carbon::parse($request->input('week'))->startOfWeek(Carbon::MONDAY) : Carbon::now()->startOfWeek(Carbon::MONDAY);
@@ -29,7 +42,6 @@ class CoverageController extends Controller
         }
         $endOfWeek = $startOfWeek->copy()->endOfWeek(Carbon::SUNDAY);
 
-        // Definir la variable de navegación para la vista
         $nav = [
             'prev' => route('admin.coverage.index', ['city' => $selectedCity, 'week' => $startOfWeek->clone()->subWeek()->format('Y-m-d')]),
             'next' => route('admin.coverage.index', ['city' => $selectedCity, 'week' => $startOfWeek->clone()->addWeek()->format('Y-m-d')]),

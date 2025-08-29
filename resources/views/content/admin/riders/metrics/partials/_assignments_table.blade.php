@@ -26,6 +26,7 @@
               @if ($assignment->status == 'active')
                 <form action="{{ route('admin.assignments.end', $assignment->id) }}" method="POST" class="d-inline">
                   @csrf
+                  {{-- CORRECCIÓN: Usar la clase correcta para el icono de "x" --}}
                   <button type="submit" class="btn btn-sm btn-danger"><i class="ti ti-x me-1"></i> Terminar</button>
                 </form>
               @endif

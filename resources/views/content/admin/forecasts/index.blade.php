@@ -1,5 +1,16 @@
 @extends('layouts/layoutMaster')
+
 @section('title', 'Gestión de Forecasts')
+
+{{-- Carga de Estilos Específicos de la Página para Datatables e iconos --}}
+@section('vendor-style')
+  @vite(['resources/assets/vendor/libs/datatables-bs5/datatables.bootstrap5.scss', 'resources/assets/vendor/libs/datatables-responsive-bs5/responsive.bootstrap5.scss', 'resources/assets/vendor/libs/datatables-buttons-bs5/buttons.bootstrap5.scss', 'resources/assets/vendor/libs/select2/select2.scss', 'resources/assets/vendor/libs/@form-validation/form-validation.scss'])
+@endsection
+
+{{-- Carga de Scripts Específicos de la Página --}}
+@section('vendor-script')
+  @vite(['resources/assets/vendor/libs/moment/moment.js', 'resources/assets/vendor/libs/datatables-bs5/datatables-bootstrap5.js', 'resources/assets/vendor/libs/select2/select2.js', 'resources/assets/vendor/libs/@form-validation/popular.js', 'resources/assets/vendor/libs/@form-validation/bootstrap5.js', 'resources/assets/vendor/libs/@form-validation/auto-focus.js', 'resources/assets/vendor/libs/cleave-zen/cleave-zen.js'])
+@endsection
 
 @section('content')
   <h4 class="py-3 mb-4">
@@ -10,7 +21,8 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="m-0">Listado de Forecasts</h5>
       <a href="{{ route('admin.forecasts.create') }}" class="btn btn-primary">
-        <i class="ti ti-plus me-1"></i> Importar Forecast
+        {{-- CAMBIO AQUÍ: Usar el formato correcto `ti tabler-plus` --}}
+        <i class="ti tabler-plus me-1"></i> Importar Forecast
       </a>
     </div>
     <div class="card-body">
@@ -35,7 +47,8 @@
                   @csrf
                   @method('DELETE')
                   <button type="submit" class="btn btn-danger btn-sm">
-                    <i class="ti ti-trash me-1"></i> Eliminar
+                    {{-- CAMBIO AQUÍ: Usar el formato correcto `ti tabler-trash` --}}
+                    <i class="ti tabler-trash me-1"></i> Eliminar
                   </button>
                 </form>
               </td>

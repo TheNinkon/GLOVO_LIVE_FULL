@@ -17,6 +17,9 @@ function GetFilesArray(query) {
 // Page JS Files
 const pageJsFiles = GetFilesArray('resources/assets/js/*.js');
 
+// NUEVAS RUTAS PARA IDENTIFICAR
+const adminJsFiles = GetFilesArray('resources/assets/js/admin/**/*.js');
+
 // Processing Vendor JS Files
 const vendorJsFiles = GetFilesArray('resources/assets/vendor/js/*.js');
 
@@ -57,17 +60,17 @@ export default defineConfig({
         'resources/css/app.css',
         'resources/assets/css/demo.css',
         'resources/js/app.js',
-        ...pageJsFiles, // <-- Esta línea ahora encontrará nuestros archivos automáticamente
+        ...pageJsFiles,
+        ...adminJsFiles, // <-- Se agregó esta línea para incluir los archivos de la nueva ruta
         ...vendorJsFiles,
         ...LibsJsFiles,
-        'resources/js/laravel-user-management.js', // Processing Laravel User Management CRUD JS File
+        'resources/js/laravel-user-management.js',
         ...CoreScssFiles,
         ...LibsScssFiles,
         ...LibsCssFiles,
         ...FontsScssFiles,
         ...FontsJsFiles,
         ...FontsCssFiles
-        // La línea estática que te di antes ha sido eliminada
       ],
       refresh: true
     }),
@@ -81,11 +84,11 @@ export default defineConfig({
     }
   },
   json: {
-    stringify: true // Helps with JSON import compatibility
+    stringify: true
   },
   build: {
     commonjsOptions: {
-      include: [/node_modules/] // Helps with importing CommonJS modules
+      include: [/node_modules/]
     }
   }
 });

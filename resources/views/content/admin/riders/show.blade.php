@@ -15,7 +15,7 @@
 @endsection
 
 @section('page-script')
-  @vite(['resources/assets/js/modal-edit-user.js', 'resources/assets/js/app-user-view.js', 'resources/assets/js/app-user-view-account.js', 'resources/assets/js/admin-rider-metrics.js'])
+  @vite(['resources/assets/js/modal-edit-user.js', 'resources/assets/js/app-user-view.js', 'resources/assets/js/app-user-view-account.js', 'resources/assets/js/admin/rider/metrics/index.js'])
 @endsection
 
 @section('content')
@@ -25,7 +25,8 @@
         <div class="card-body pt-12">
           <div class="d-flex justify-content-end mb-3">
             <button class="btn btn-label-secondary btn-sm toggle-profile-sidebar">
-              <i class="ti ti-menu-2"></i>
+              {{-- Corrección: El ícono del menú es 'tabler-menu-2' --}}
+              <i class="ti tabler-menu-2"></i>
             </button>
           </div>
 
@@ -44,7 +45,8 @@
             <div class="d-flex align-items-center me-5 gap-4">
               <div class="avatar">
                 <div class="avatar-initial bg-label-primary rounded">
-                  <i class="ti ti-clock-hour-3 ti-lg"></i>
+                  {{-- Corrección: El ícono del reloj es 'tabler-clock-hour-3' --}}
+                  <i class="ti tabler-clock-hour-3 ti-lg"></i>
                 </div>
               </div>
               <div>
@@ -55,7 +57,8 @@
             <div class="d-flex align-items-center gap-4">
               <div class="avatar">
                 <div class="avatar-initial bg-label-primary rounded">
-                  <i class="ti ti-pencil ti-lg"></i>
+                  {{-- Corrección: El ícono del lápiz es 'tabler-pencil' --}}
+                  <i class="ti tabler-pencil ti-lg"></i>
                 </div>
               </div>
               <div>
@@ -108,12 +111,14 @@
         <ul class="nav nav-pills flex-column flex-md-row flex-wrap mb-6 row-gap-2">
           <li class="nav-item">
             <a class="nav-link active" data-bs-toggle="tab" href="#metrics-tab" role="tab" aria-selected="true">
-              <i class="ti ti-chart-bar ti-sm me-1_5"></i>Métricas
+              {{-- Corrección: El ícono del gráfico de barras es 'tabler-chart-bar' --}}
+              <i class="ti tabler-chart-bar ti-sm me-1_5"></i>Métricas
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" data-bs-toggle="tab" href="#assignments-tab" role="tab" aria-selected="false">
-              <i class="ti ti-history ti-sm me-1_5"></i>Asignaciones
+              {{-- Corrección: El ícono de historial es 'tabler-history' --}}
+              <i class="ti tabler-history ti-sm me-1_5"></i>Asignaciones
             </a>
           </li>
         </ul>
