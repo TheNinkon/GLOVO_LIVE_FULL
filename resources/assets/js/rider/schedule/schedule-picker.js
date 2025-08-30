@@ -5,14 +5,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const scheduleCard = document.querySelector('.schedule-card');
   if (!scheduleCard) return;
 
-  // Variables se leen del DOM en lugar de pasarlas directamente, lo que es una mejor práctica
   const csrfToken = scheduleCard.dataset.csrfToken;
   const selectUrl = scheduleCard.dataset.selectUrl;
   const deselectUrl = scheduleCard.dataset.deselectUrl;
   const defaultDay = scheduleCard.dataset.defaultDay;
   const apiUrl = scheduleCard.dataset.apiUrl;
 
-  // Las variables que pueden ser nulas se manejan con un valor por defecto
   let scheduleIsLocked = scheduleCard.dataset.isLocked === 'true';
   let contractedHours = 0;
   let reservedHours = 0;
@@ -124,9 +122,18 @@ document.addEventListener('DOMContentLoaded', function () {
     availableContent.innerHTML = '';
     reservedContent.innerHTML = '';
 
+    if (!scheduleData || !Array.isArray(scheduleData)) {
+      availableContent.innerHTML = `<div class="alert alert-warning text-center m-4">No hay datos de horario para mostrar.</div>`;
+      return;
+    }
+
     scheduleData.forEach(dayData => {
       const dayContainer = document.createElement('div');
       dayContainer.innerHTML = `<h6 class="text-center text-muted text-uppercase mt-4">${dayData.dayName}</h6>`;
+
+      if (!dayData.slots || !Array.isArray(dayData.slots)) {
+        return;
+      }
 
       dayData.slots.forEach(slot => {
         const isMine = slot.status === 'mine';
@@ -163,19 +170,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const slotEl = document.createElement('div');
         slotEl.className = 'daily-schedule-slot';
         slotEl.innerHTML = `
-                <div class="slot-time">${slot.time}</div>
-                <div class="${classList.join(' ')}" style="cursor: ${cursor};" data-slot-identifier="${slot.identifier}">
-                    <span>${slot.time}</span>
-                    ${iconHtml}
-                </div>
-            `;
+          <div class="slot-time">${slot.time}</div>
+          <div class="${classList.join(' ')}" style="cursor: ${cursor};" data-slot-identifier="${slot.identifier}">
+              <span>${slot.time}</span>
+              ${iconHtml}
+          </div>
+        `;
 
         if (isMine) {
-          // Agregar al contenedor de reservadas
           reservedContent.appendChild(dayContainer.cloneNode(true));
           reservedContent.lastElementChild.appendChild(slotEl);
         } else {
-          // Agregar al contenedor de disponibles
           availableContent.appendChild(dayContainer.cloneNode(true));
           availableContent.lastElementChild.appendChild(slotEl);
         }
@@ -205,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function () {
           text: 'Tus horas han sido reservadas y ya no podrás modificarlas.',
           confirmButtonText: 'Ok'
         });
-        // Aquí se enviaría el formulario o la petición AJAX final si existiera
       });
     }
   }
@@ -215,11 +219,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const slotEl = event.currentTarget;
     const slotIdentifier = slotEl.dataset.slotIdentifier;
 
-    // Se construye el body de la petición con la información necesaria
     const data = {
       _token: csrfToken,
       slot: slotIdentifier,
-      forecast_id: forecastId // Se pasa el forecast_id
+      forecast_id: forecastId
     };
 
     try {
@@ -248,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
           timer: 1500,
           showConfirmButton: false
         }).then(() => {
-          loadSchedule(defaultDay); // Recarga el horario
+          loadSchedule(defaultDay);
         });
       }
     } catch (error) {
@@ -328,20 +331,12 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Carga inicial del horario
-  // Es importante usar una función wrapper para la carga inicial,
-  // ya que `loadSchedule` es una función asíncrona.
-  async function initialLoad() {
-    if (initialScheduleData && Object.keys(initialScheduleData).length > 0) {
-      // Si los datos iniciales están disponibles, renderiza la vista
-      // sin necesidad de hacer otra llamada AJAX.
-      renderSchedule(initialScheduleData);
-      // Opcional: actualizar el resumen de horas con los datos iniciales
-      hoursContractedEl.innerText = `${contractedHours}h`;
-      hoursReservedEl.innerText = `${reservedHours.toFixed(1)}h`;
-    } else {
-      // Si no hay datos iniciales, realiza la llamada AJAX
-      loadSchedule(defaultDay);
-    }
+  if (initialScheduleData && Object.keys(initialScheduleData).length > 0) {
+    renderSchedule(initialScheduleData);
+    hoursContractedEl.innerText = `${initialContractedHours}h`;
+    hoursReservedEl.innerText = `${initialReservedHours.toFixed(1)}h`;
+    editsRemainingEl.innerText = `${initialEditsRemaining}`;
+  } else {
+    loadSchedule(defaultDay);
   }
-  initialLoad();
 });

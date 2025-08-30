@@ -5,32 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Rider extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * Guard asociado al modelo.
-     * @var string
-     */
     protected $guard = 'rider';
 
     protected $fillable = [
-        'full_name',
-        'dni',
-        'city',
-        'phone',
+        'name',
         'email',
         'password',
-        'start_date',
-        'status',
-        'notes',
+        'city', // Añadimos la columna de ciudad
         'weekly_contract_hours',
         'edits_remaining',
-        'schedule_is_locked', // Nuevo campo para el estado de bloqueo del horario
+        'schedule_is_locked',
     ];
 
     protected $hidden = [
@@ -38,40 +30,19 @@ class Rider extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'password'   => 'hashed',
-            'start_date' => 'date',
-            'schedule_is_locked' => 'boolean', // Cast para asegurar que es un booleano
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'schedule_is_locked' => 'boolean',
+    ];
 
-    /** Historial de asignaciones del rider */
-    public function assignments(): HasMany
-    {
-        return $this->hasMany(Assignment::class);
-    }
-
-    /** Asignación activa (si existe) */
-    public function activeAssignment(): HasOne
-    {
-        return $this->hasOne(Assignment::class)->where('status', 'active');
-    }
-
-    /**
-     * Define la relación: Un Rider tiene muchos Schedules (horas reservadas).
-     */
     public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
     }
 
-    /**
-     * Define la relación: Un Rider tiene muchas asignaciones de prefactura.
-     */
-    public function prefacturaAssignments(): HasMany
+    public function accounts(): BelongsToMany
     {
-        return $this->hasMany(PrefacturaAssignment::class);
+        return $this->belongsToMany(Account::class, 'assignments')->withTimestamps();
     }
 }

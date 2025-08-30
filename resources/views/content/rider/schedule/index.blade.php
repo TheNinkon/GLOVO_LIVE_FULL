@@ -347,16 +347,17 @@
 
 @section('page-script')
   <script>
-    // Variables para que el JavaScript pueda acceder a los datos de la vista
-    // La URL de la API se construye de forma segura en JS para manejar los parámetros
-    const apiUrl = '{{ route('rider.schedule.data') }}';
+    const csrfToken = '{{ csrf_token() }}';
     const selectUrl = '{{ route('rider.schedule.select') }}';
     const deselectUrl = '{{ route('rider.schedule.deselect') }}';
-    const csrfToken = '{{ csrf_token() }}';
     const defaultDay = '{{ $defaultDay }}';
-    const initialScheduleData = @json($scheduleData);
-    const isLocked = @json($isLocked);
+    const apiUrl = '{{ route('rider.schedule.data') }}';
+    const isLocked = {{ json_encode($isLocked) }};
     const forecastId = '{{ $forecast_id ?? 'null' }}';
+    const initialScheduleData = @json($scheduleData);
+    const initialReservedHours = {{ $summary['reservedHours'] ?? 0 }};
+    const initialContractedHours = {{ $summary['contractedHours'] ?? 0 }};
+    const initialEditsRemaining = {{ $summary['wildcards'] ?? 0 }};
   </script>
   @vite(['resources/assets/js/rider/schedule/schedule-picker.js'])
 @endsection

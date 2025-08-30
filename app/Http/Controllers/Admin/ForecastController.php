@@ -10,19 +10,18 @@ use Carbon\Carbon;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ForecastController extends Controller
 {
     public function __construct()
     {
-        // Aplica la política ForecastPolicy a todos los métodos del controlador.
         $this->authorizeResource(Forecast::class, 'forecast');
     }
 
     public function index(Request $request): View
     {
         Carbon::setLocale(config('app.locale'));
-
         $availableCities = Forecast::distinct()->pluck('city')->sort();
         $selectedCity = $request->input('city') ?? $availableCities->first();
 
@@ -74,30 +73,54 @@ class ForecastController extends Controller
         ]);
 
         $file = $request->file('file');
-        $csv = Reader::createFromPath($file->getPathname(), 'r');
-        $csv->setHeaderOffset(0);
-
-        $records = $csv->getRecords();
 
         try {
             DB::beginTransaction();
 
-            $forecast = Forecast::create([
-                'city' => $request->city,
-                'week_start_date' => Carbon::parse($request->week_start_date),
-                'booking_deadline' => Carbon::parse($request->booking_deadline),
-            ]);
+            $week_start_date = Carbon::parse($request->week_start_date);
+
+            // VERIFICACIÓN CLAVE: Evita el error de duplicidad
+            if (Forecast::where('city', $request->city)->where('week_start_date', $week_start_date)->exists()) {
+                throw new \Exception('Ya existe un forecast para la ciudad y semana seleccionadas. Elimina el anterior o selecciona otra semana.');
+            }
+
+            $csv = Reader::createFromPath($file->getPathname(), 'r');
+            $csv->setHeaderOffset(0);
+
+            $records = $csv->getRecords();
+
+            $forecast_data = [];
+            // Los encabezados del archivo CSV de tu ejemplo
+            $dayHeaders = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            $timeHeader = 'Etiquetas de fila';
 
             foreach ($records as $record) {
-                $forecast->schedules()->create([
-                    'day_of_week' => $record['day_of_week'],
-                    'reserved_hours' => $record['reserved_hours'],
-                ]);
+                // Asegúrate de que el CSV tiene la columna de tiempo
+                if (!isset($record[$timeHeader])) {
+                    throw new \Exception('La columna de tiempo "Etiquetas de fila" no se encontró en el archivo CSV.');
+                }
+
+                $timeSlot = $record[$timeHeader];
+                $timeSlot = str_replace(':00:00', ':00', $timeSlot);
+
+                // Itera sobre los días de la semana y guarda el valor en el array
+                foreach ($dayHeaders as $day) {
+                    $demand = $record[$day] ?? 0;
+                    $forecast_data[strtolower($day)][$timeSlot] = (int) $demand;
+                }
             }
+
+            Forecast::create([
+                'city' => $request->city,
+                'week_start_date' => $week_start_date,
+                'booking_deadline' => Carbon::parse($request->booking_deadline),
+                'forecast_data' => $forecast_data,
+            ]);
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Ocurrió un error al procesar el archivo: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Ocurrió un error al procesar el archivo: ' . $e->getMessage());
         }
 
         return redirect()->route('admin.forecasts.index')->with('success', 'Forecast importado y procesado correctamente.');

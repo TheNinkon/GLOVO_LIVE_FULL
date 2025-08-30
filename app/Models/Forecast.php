@@ -23,24 +23,9 @@ class Forecast extends Model
         'booking_deadline' => 'datetime',
     ];
 
-    /**
-     * Get the schedules for the forecast.
-     */
+    // Relación con los horarios
     public function schedules(): HasMany
     {
         return $this->hasMany(Schedule::class);
-    }
-
-    /**
-     * The "booting" method of the model.
-     */
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::deleting(function (Forecast $forecast) {
-            // Delete all associated schedules before deleting the forecast
-            $forecast->schedules()->delete();
-        });
     }
 }
