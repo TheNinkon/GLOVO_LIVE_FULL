@@ -47,7 +47,7 @@ class ScheduleController extends Controller
             $defaultDay = Carbon::now()->format('Y-m-d');
         }
 
-        // Se inicializan todas las variables para que no haya 'Undefined variable' en la vista
+        // Se inicializan todas las variables antes del bloque 'if'
         $scheduleData = null;
         $myHoursCount = 0;
         $deadline = null;
@@ -89,41 +89,49 @@ class ScheduleController extends Controller
      */
     public function getForecastData(Request $request): JsonResponse
     {
-        $rider = Auth::guard('rider')->user();
-        $startOfWeek = Carbon::parse($request->week)->startOfWeek(Carbon::MONDAY);
+        try {
+            $rider = Auth::guard('rider')->user();
+            $startOfWeek = Carbon::parse($request->week)->startOfWeek(Carbon::MONDAY);
 
-        $forecast = Forecast::where('city', $rider->city)
-            ->where('week_start_date', $startOfWeek)
-            ->first();
+            $forecast = Forecast::where('city', $rider->city)
+                ->where('week_start_date', $startOfWeek)
+                ->first();
 
-        if (!$forecast) {
+            if (!$forecast) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No hay horario disponible para esta semana.',
+                    'scheduleData' => null,
+                    'reservedHours' => 0,
+                    'contractedHours' => $rider->weekly_contract_hours,
+                    'wildcards' => $rider->edits_remaining,
+                    'deadline' => null,
+                    'isLocked' => $rider->schedule_is_locked,
+                    'forecast_id' => null
+                ]);
+            }
+
+            $isLocked = $rider->schedule_is_locked;
+            $scheduleData = $this->prepareScheduleDataForView($forecast, $rider->id);
+            $myHoursCount = $scheduleData['mySchedules']->count() * 0.5;
+
             return response()->json([
-                'success' => false,
-                'message' => 'No hay horario disponible para esta semana.',
-                'scheduleData' => null,
-                'reservedHours' => 0,
+                'success' => true,
+                'scheduleData' => $scheduleData['days'],
+                'reservedHours' => $myHoursCount,
                 'contractedHours' => $rider->weekly_contract_hours,
                 'wildcards' => $rider->edits_remaining,
-                'deadline' => null,
-                'isLocked' => $rider->schedule_is_locked,
-                'forecast_id' => null
+                'deadline' => $forecast->booking_deadline,
+                'isLocked' => $isLocked,
+                'forecast_id' => $forecast->id,
             ]);
+        } catch (\Exception $e) {
+            // Manejar cualquier error inesperado y devolver una respuesta JSON con un mensaje de error
+            return response()->json([
+                'success' => false,
+                'message' => 'Error en el servidor: ' . $e->getMessage()
+            ], 500); // Devuelve un código de estado 500
         }
-
-        $isLocked = $rider->schedule_is_locked;
-        $scheduleData = $this->prepareScheduleDataForView($forecast, $rider->id);
-        $myHoursCount = $scheduleData['mySchedules']->count() * 0.5;
-
-        return response()->json([
-            'success' => true,
-            'scheduleData' => $scheduleData['days'],
-            'reservedHours' => $myHoursCount,
-            'contractedHours' => $rider->weekly_contract_hours,
-            'wildcards' => $rider->edits_remaining,
-            'deadline' => $forecast->booking_deadline,
-            'isLocked' => $isLocked,
-            'forecast_id' => $forecast->id,
-        ]);
     }
 
     /**
@@ -131,6 +139,7 @@ class ScheduleController extends Controller
      */
     public function selectSlot(Request $request): JsonResponse
     {
+        // Validar si el horario está bloqueado antes de procesar la solicitud
         $rider = Auth::guard('rider')->user();
         if ($rider->schedule_is_locked) {
             return response()->json(['message' => 'Tu horario ha sido bloqueado por el administrador. No puedes hacer cambios.'], 403);
@@ -145,6 +154,8 @@ class ScheduleController extends Controller
     public function deselectSlot(Request $request): JsonResponse
     {
         $rider = Auth::guard('rider')->user();
+
+        // Validar si el horario está bloqueado antes de procesar la solicitud
         if ($rider->schedule_is_locked) {
             return response()->json(['message' => 'Tu horario ha sido bloqueado por el administrador. No puedes hacer cambios.'], 403);
         }
@@ -192,9 +203,9 @@ class ScheduleController extends Controller
                 }
             }
 
-            $dayKey  = strtolower(Carbon::parse($date)->format('D'));
+            $dayKey = strtolower(Carbon::parse($date)->translatedFormat('D'));
             $timeKey = Carbon::parse($time)->format('H:i');
-            $demand  = $forecast->forecast_data[$dayKey][$timeKey] ?? 0;
+            $demand = $forecast->forecast_data[$dayKey][$timeKey] ?? 0;
             $bookedCount = Schedule::where('forecast_id', $forecast->id)->where('slot_date', $date)->where('slot_time', $time)->count();
 
             if ($action === 'select') {
@@ -230,7 +241,7 @@ class ScheduleController extends Controller
         $days = [];
         for ($i = 0; $i < 7; $i++) {
             $currentDate = $startOfWeek->clone()->addDays($i);
-            $dayKey = strtolower($currentDate->format('D'));
+            $dayKey = strtolower($currentDate->translatedFormat('D'));
             $slots = [];
             for ($j = 0; $j < 48; $j++) {
                 $currentTime = Carbon::createFromTimeString('00:00')->addMinutes($j * 30);

@@ -12,7 +12,7 @@
 
 @section('page-style')
   <style>
-    /* --- Layout Principal --- */
+    /* ... (tu CSS sin cambios) ... */
     .schedule-card {
       display: flex;
       flex-direction: column;
@@ -272,11 +272,10 @@
 @endsection
 
 @section('content')
-  <div class="card schedule-card" data-api-url="{{ route('rider.schedule.data', ['week' => $defaultDay]) }}"
-    {{-- Ruta API con la semana por defecto --}} data-select-url="{{ route('rider.schedule.select') }}"
-    data-deselect-url="{{ route('rider.schedule.deselect') }}" data-csrf-token="{{ csrf_token() }}"
-    data-is-locked="{{ $isLocked ? 'true' : 'false' }}" data-forecast-id="{{ $forecast_id ?? 'null' }}"
-    data-default-day="{{ $defaultDay }}">
+  <div class="card schedule-card" data-api-url="{{ route('rider.schedule.data') }}"
+    data-select-url="{{ route('rider.schedule.select') }}" data-deselect-url="{{ route('rider.schedule.deselect') }}"
+    data-csrf-token="{{ csrf_token() }}" data-is-locked="{{ $isLocked ? 'true' : 'false' }}"
+    data-forecast-id="{{ $forecast_id ?? 'null' }}" data-default-day="{{ $defaultDay }}">
 
     <div class="schedule-header">
       <a href="{{ $prevWeek ?? '#' }}" class="btn btn-icon rounded-pill {{ !$prevWeek ? 'disabled' : '' }}"><i
@@ -317,12 +316,12 @@
 
       <div class="schedule-scroll-area">
         <div id="disponibles-content" class="schedule-content active">
-          @if ($scheduleData)
+          @if (!$scheduleData)
+            <div class="alert alert-warning text-center m-4">No hay un horario disponible para esta semana.</div>
+          @else
             <div class="text-center p-4">
               <div class="spinner-border text-primary" role="status"></div>
             </div>
-          @else
-            <div class="alert alert-warning text-center m-4">No hay un horario disponible para esta semana.</div>
           @endif
         </div>
         <div id="reservadas-content" class="schedule-content"></div>
@@ -349,14 +348,15 @@
 @section('page-script')
   <script>
     // Variables para que el JavaScript pueda acceder a los datos de la vista
-    const apiUrl = '{{ route('rider.schedule.data', ['week' => $defaultDay]) }}';
+    // La URL de la API se construye de forma segura en JS para manejar los parámetros
+    const apiUrl = '{{ route('rider.schedule.data') }}';
     const selectUrl = '{{ route('rider.schedule.select') }}';
     const deselectUrl = '{{ route('rider.schedule.deselect') }}';
     const csrfToken = '{{ csrf_token() }}';
     const defaultDay = '{{ $defaultDay }}';
     const initialScheduleData = @json($scheduleData);
     const isLocked = @json($isLocked);
-    const forecastId = '{{ $forecast_id }}';
+    const forecastId = '{{ $forecast_id ?? 'null' }}';
   </script>
   @vite(['resources/assets/js/rider/schedule/schedule-picker.js'])
 @endsection
