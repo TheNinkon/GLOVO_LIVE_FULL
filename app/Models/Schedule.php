@@ -15,11 +15,13 @@ class Schedule extends Model
         'forecast_id',
         'slot_date',
         'slot_time',
+        'is_submitted', // Nuevo campo
     ];
 
     protected $casts = [
         'slot_date' => 'date',
         'slot_time' => 'datetime:H:i:s',
+        'is_submitted' => 'boolean', // Cast para asegurar que es un booleano
     ];
 
     public function rider(): BelongsTo

@@ -21,7 +21,7 @@
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="m-0">Listado de Forecasts</h5>
       <a href="{{ route('admin.forecasts.create') }}" class="btn btn-primary">
-        {{-- CAMBIO AQUÍ: Usar el formato correcto `ti tabler-plus` --}}
+        {{-- CORRECCIÓN: Usar el formato correcto `ti tabler-plus` --}}
         <i class="ti tabler-plus me-1"></i> Importar Forecast
       </a>
     </div>
@@ -47,7 +47,7 @@
                   @csrf
                   @method('DELETE')
                   <button type="submit" class="btn btn-danger btn-sm">
-                    {{-- CAMBIO AQUÍ: Usar el formato correcto `ti tabler-trash` --}}
+                    {{-- CORRECCIÓN: Usar el formato correcto `ti tabler-trash` --}}
                     <i class="ti tabler-trash me-1"></i> Eliminar
                   </button>
                 </form>

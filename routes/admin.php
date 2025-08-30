@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\RiderController as AdminRiderController;
 use App\Http\Controllers\Admin\Rider\MetricsController as AdminRiderMetricsController;
+use App\Http\Controllers\Admin\Rider\Schedule\ScheduleController as AdminRiderScheduleController;
 use App\Http\Controllers\Admin\ForecastController;
 use App\Http\Controllers\Admin\AccountController as AdminAccountController;
 use App\Http\Controllers\Admin\AssignmentController as AdminAssignmentController;
@@ -34,6 +35,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/riders/list', [AdminRiderController::class, 'list'])->name('riders.list');
         Route::get('/riders/{rider}/assignments', [AdminRiderController::class, 'getPrefacturaAssignments'])->name('riders.assignments');
         Route::resource('/riders', AdminRiderController::class);
+
+        // Módulo de Horario de Riders
+        Route::group(['prefix' => 'riders/{rider}/schedules', 'as' => 'riders.schedules.'], function () {
+            Route::get('/', [AdminRiderScheduleController::class, 'index'])->name('index');
+            Route::get('/show', [AdminRiderScheduleController::class, 'show'])->name('show');
+            Route::post('/lock', [AdminRiderScheduleController::class, 'lock'])->name('lock');
+            Route::post('/unlock', [AdminRiderScheduleController::class, 'unlock'])->name('unlock');
+            Route::post('/mark-submitted', [AdminRiderScheduleController::class, 'markAsSubmitted'])->name('mark-submitted');
+        });
 
         // Módulo de Métricas por Rider (dentro de la carpeta del rider)
         Route::get('/riders/{id}/metrics', [AdminRiderMetricsController::class, 'index'])->name('riders.metrics.index');

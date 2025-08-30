@@ -30,6 +30,7 @@ class Rider extends Authenticatable
         'notes',
         'weekly_contract_hours',
         'edits_remaining',
+        'schedule_is_locked', // Nuevo campo para el estado de bloqueo del horario
     ];
 
     protected $hidden = [
@@ -42,6 +43,7 @@ class Rider extends Authenticatable
         return [
             'password'   => 'hashed',
             'start_date' => 'date',
+            'schedule_is_locked' => 'boolean', // Cast para asegurar que es un booleano
         ];
     }
 

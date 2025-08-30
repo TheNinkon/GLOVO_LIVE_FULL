@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RiderLoginController;
 use App\Http\Controllers\Rider\DashboardController as RiderDashboardController;
-use App\Http\Controllers\Rider\ScheduleController as RiderScheduleController;
+use App\Http\Controllers\Rider\Schedule\ScheduleController as RiderScheduleController;
 use App\Http\Controllers\Rider\ProfileController;
 use App\Http\Controllers\Rider\RiderMetricsController;
 
@@ -24,8 +24,12 @@ Route::prefix('rider')->name('rider.')->group(function () {
         Route::get('/dashboard', [RiderDashboardController::class, 'index'])->name('dashboard');
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
 
-        // Horario
+        // Horario - Vista
         Route::get('/schedule/{week?}', [RiderScheduleController::class, 'index'])->name('schedule.index');
+
+        // Horario - API para cargar datos
+        // Esta es la nueva ruta que debe usar tu JS para cargar el JSON
+        Route::get('/schedule-api/{week?}', [RiderScheduleController::class, 'getForecastData'])->name('schedule.data');
 
         // Acciones AJAX horario
         Route::post('/schedule/select', [RiderScheduleController::class, 'selectSlot'])->name('schedule.select');

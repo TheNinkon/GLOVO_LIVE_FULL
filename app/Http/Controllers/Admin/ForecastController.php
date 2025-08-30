@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use League\Csv\Reader;
 use Carbon\Carbon;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class ForecastController extends Controller
 {
@@ -31,7 +33,6 @@ class ForecastController extends Controller
         }
         $endOfWeek = $startOfWeek->copy()->endOfWeek(Carbon::SUNDAY);
 
-        // Se define la variable $nav para la paginación de semanas.
         $nav = [
             'prev' => route('admin.forecasts.index', ['city' => $selectedCity, 'week' => $startOfWeek->clone()->subWeek()->format('Y-m-d')]),
             'next' => route('admin.forecasts.index', ['city' => $selectedCity, 'week' => $startOfWeek->clone()->addWeek()->format('Y-m-d')]),
@@ -43,13 +44,13 @@ class ForecastController extends Controller
             ->orderBy('week_start_date', 'desc')
             ->paginate(15);
 
-        // Pasa todas las variables necesarias a la vista para evitar errores.
         return view('content.admin.forecasts.index', compact('forecasts', 'selectedCity', 'nav', 'availableCities', 'startOfWeek'));
     }
 
     public function create(): View
     {
-        // Se define la variable $availableCities y $startOfWeek para la vista de creación.
+        $this->authorize('create', Forecast::class);
+
         $availableCities = Forecast::distinct()->pluck('city')->sort();
         $selectedCity = $availableCities->first() ?? 'Selecciona una ciudad';
         $startOfWeek = Carbon::now()->startOfWeek(Carbon::MONDAY);
@@ -57,13 +58,55 @@ class ForecastController extends Controller
         return view('content.admin.forecasts.create', compact('selectedCity', 'availableCities', 'startOfWeek'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        // ... (Tu código para el store)
+        $request->validate([
+            'city' => 'required|string|max:255',
+            'week_start_date' => 'required|date',
+            'booking_deadline' => 'required|date',
+            'file' => 'required|file|mimes:csv,txt|max:2048',
+        ], [
+            'file.required' => 'Debes subir un archivo CSV.',
+            'file.mimes' => 'El archivo debe ser de tipo CSV.',
+            'city.required' => 'Debes seleccionar una ciudad.',
+            'week_start_date.required' => 'Debes seleccionar la fecha de inicio de semana.',
+            'booking_deadline.required' => 'Debes seleccionar la fecha límite para reservar.',
+        ]);
+
+        $file = $request->file('file');
+        $csv = Reader::createFromPath($file->getPathname(), 'r');
+        $csv->setHeaderOffset(0);
+
+        $records = $csv->getRecords();
+
+        try {
+            DB::beginTransaction();
+
+            $forecast = Forecast::create([
+                'city' => $request->city,
+                'week_start_date' => Carbon::parse($request->week_start_date),
+                'booking_deadline' => Carbon::parse($request->booking_deadline),
+            ]);
+
+            foreach ($records as $record) {
+                $forecast->schedules()->create([
+                    'day_of_week' => $record['day_of_week'],
+                    'reserved_hours' => $record['reserved_hours'],
+                ]);
+            }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Ocurrió un error al procesar el archivo: ' . $e->getMessage());
+        }
+
+        return redirect()->route('admin.forecasts.index')->with('success', 'Forecast importado y procesado correctamente.');
     }
 
-    public function destroy(Forecast $forecast)
+    public function destroy(Forecast $forecast): RedirectResponse
     {
+        $this->authorize('delete', $forecast);
+
         $forecast->delete();
         return redirect()->route('admin.forecasts.index')->with('success', 'Forecast y horas asociadas eliminados correctamente.');
     }
